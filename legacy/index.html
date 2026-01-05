@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Habla! — Predicciones de fútbol</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Tailwind config (optional fine-tune)
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            habla: {
+              50: "#f8fafc",
+              100: "#eef2f7",
+              200: "#e2e8f0",
+              300: "#cbd5e1",
+              400: "#94a3b8",
+              500: "#64748b",
+              600: "#475569",
+              700: "#334155",
+              800: "#1f2937",
+              900: "#0f172a"
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Simple fade animations */
+    .fade-enter { opacity: 0; transform: translateY(6px); }
+    .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity .15s ease, transform .15s ease; }
+    .btn { @apply inline-flex items-center justify-center rounded-xl px-4 py-2 font-semibold border border-habla-300 hover:bg-habla-50 disabled:opacity-50 disabled:cursor-not-allowed; }
+    .btn-primary { @apply bg-black text-white border-black hover:opacity-90; }
+    .pill { @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm bg-habla-100 text-habla-700; }
+    .tag { @apply inline-flex items-center rounded-md bg-habla-100 px-2 py-0.5 text-xs font-medium text-habla-700; }
+    .card { @apply rounded-2xl border border-habla-200 bg-white shadow-sm; }
+    .input { @apply w-full rounded-xl border border-habla-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black; }
+    .link { @apply text-habla-700 hover:text-black hover:underline; }
+    .sr { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  </style>
+</head>
+<body class="bg-habla-50 text-habla-900">
+  <!-- Top Nav -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-habla-200">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-8">
+        <a href="#/matches" class="flex items-center gap-2 font-black text-xl">
+          <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-black text-white">H!</span>
+          Habla!
+        </a>
+        <nav class="hidden md:flex items-center gap-6 text-sm">
+          <a href="#/matches" class="link">Partidos</a>
+          <a href="#/tickets" class="link">Mis combinadas</a>
+          <a href="#/results" class="link">Resultados</a>
+          <a href="#/store" class="link">Tienda</a>
+          <a href="#/wallet" class="link">Billetera</a>
+          <a href="#/how-to-play" class="link">Cómo jugar</a>
+          <a href="#/faq" class="link">Preguntas frecuentes</a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div id="balancePill" class="pill hidden">
+          <span id="lukasBalance">0</span> Lukas
+        </div>
+        <button id="topUpBtn" class="btn" onclick="openTopUp()" title="Recargar Lukas">Recargar</button>
+        <div id="authArea" class="ml-2">
+          <!-- Populated by JS: Login / User menu -->
+        </div>
+        <button class="md:hidden btn" onclick="toggleMobileMenu()">☰</button>
+      </div>
+    </div>
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="hidden md:hidden border-t border-habla-200 bg-white">
+      <nav class="px-4 py-3 flex flex-col gap-2 text-sm">
+        <a href="#/matches" class="link">Partidos</a>
+        <a href="#/tickets" class="link">Mis combinadas</a>
+        <a href="#/results" class="link">Resultados</a>
+        <a href="#/store" class="link">Tienda</a>
+        <a href="#/wallet" class="link">Billetera</a>
+        <a href="#/how-to-play" class="link">Cómo jugar</a>
+        <a href="#/faq" class="link">Preguntas frecuentes</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Notifications (toasts) -->
+  <div id="toasts" class="fixed top-20 right-4 z-50 space-y-2"></div>
+
+  <!-- Main -->
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+    <div id="app" class="fade-enter"></div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-habla-200 bg-white">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-2 sm:grid-cols-4 gap-6 text-sm">
+      <div>
+        <div class="font-semibold mb-2">Juego</div>
+        <ul class="space-y-1">
+          <li><a href="#/how-to-play" class="link">Cómo jugar</a></li>
+          <li><a href="#/rules" class="link">Reglas y puntajes</a></li>
+          <li><a href="#/transparency" class="link">Transparencia</a></li>
+          <li><a href="#/faq" class="link">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="font-semibold mb-2">Cuenta</div>
+        <ul class="space-y-1">
+          <li><a href="#/profile" class="link">Mi perfil</a></li>
+          <li><a href="#/wallet" class="link">Billetera</a></li>
+          <li><a href="#/history" class="link">Historial de movimientos</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="font-semibold mb-2">Soporte</div>
+        <ul class="space-y-1">
+          <li><a href="#/help" class="link">Centro de ayuda</a></li>
+          <li><a href="#/contact" class="link">Contáctanos</a></li>
+          <li><a href="#/report" class="link">Reportar problema</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="font-semibold mb-2">Legal</div>
+        <ul class="space-y-1">
+          <li><a href="#/terms" class="link">Términos del servicio</a></li>
+          <li><a href="#/privacy" class="link">Política de privacidad</a></li>
+          <li><a href="#/responsible" class="link">Juego responsable</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="text-center text-xs text-habla-500 pb-8">
+      © Habla! 2025 · Todos los derechos reservados
+    </div>
+  </footer>
+
+  <!-- Modals -->
+  <div id="modalRoot"></div>
+
+  <script>
+    /* ---------------------------------------------------------
+       In-memory SPA scaffold (no backend). The UI mirrors the
+       microservices: Auth, Wallet, Pagos, Torneos, Combinadas,
+       Scoring, Leaderboard, Tienda, Transparencia, Notifs.
+       Replace stubs with real API calls later.
+       --------------------------------------------------------- */
+
+    // ---------- Utilities ----------
+    const $ = (sel, el=document) => el.querySelector(sel);
+    const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+    const fmt = (n) => new Intl.NumberFormat('es-ES').format(n);
+    const nowIso = () => new Date().toISOString();
+    const uid = () => Math.random().toString(36).slice(2,10);
+    const hashCombo = combo => JSON.stringify([
+      combo.p1x2, combo.btts, combo.over25, combo.red, `${combo.exact.h}-${combo.exact.a}`
+    ]);
+    const statusLabel = (status) => ({
+      open: "Abierto",
+      locked: "Bloqueado",
+      in_play: "En juego",
+      finished: "Finalizado"
+    }[status] || status);
+    const yesNoLabel = (value) => ({
+      Yes: "Sí",
+      No: "No"
+    }[value] || value);
+    const p1x2Label = (value) => ({
+      Home: "Local",
+      Draw: "Empate",
+      Away: "Visita"
+    }[value] || value);
+    const methodLabel = (value) => ({
+      yape: "Yape/Plin",
+      card: "Tarjeta",
+      bank: "Transferencia rápida"
+    }[value] || value);
+    const storeTypeLabel = (value) => ({
+      physical: "físico",
+      digital: "digital"
+    }[value] || value);
+    const orderStatusLabel = (value) => ({
+      requested: "pendiente",
+      completed: "completado"
+    }[value] || value);
+
+    const calculateAge = (dateStr) => {
+      if (!dateStr) return null;
+      const dob = new Date(dateStr);
+      if (Number.isNaN(dob.getTime())) return null;
+      const diff = Date.now() - dob.getTime();
+      const ageDate = new Date(diff);
+      return Math.abs(ageDate.getUTCFullYear() - 1970);
+    };
+
+    const userDisplayName = (user) => {
+      if (!user) return "";
+      if (user.nickname) return user.nickname;
+      if (user.firstName) return user.firstName.split(' ')[0];
+      return user.email?.split('@')[0] || "Usuario";
+    };
+
+    const formatDate = (dateStr, options={}) => {
+      if (!dateStr) return "-";
+      const date = new Date(dateStr);
+      if (Number.isNaN(date.getTime())) return "-";
+      return date.toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric', ...options });
+    };
+
+    const toast = (msg, type="info") => {
+      const colors = {
+        info: "bg-white border-habla-300",
+        success: "bg-white border-green-300",
+        warn: "bg-white border-yellow-300",
+        error: "bg-white border-red-300"
+      };
+      const t = document.createElement('div');
+      t.className = `card border ${colors[type]} p-3 text-sm shadow-lg`;
+      t.textContent = msg;
+      $("#toasts").appendChild(t);
+      setTimeout(()=> t.remove(), 2600);
+    };
+
+    let userMenuCloseTimer = null;
+    let userMenuOutsideListenerBound = false;
+    let authModalMode = 'login';
+    let pendingAuthAction = '';
+    const setUserMenuOpen = (open) => {
+      const menu = document.getElementById('userMenu');
+      if (!menu) return;
+      menu.classList.toggle('hidden', !open);
+      menu.dataset.open = open ? 'true' : 'false';
+    };
+
+    const openModal = (html) => {
+      const root = document.getElementById("modalRoot");
+      const wrap = document.createElement('div');
+      wrap.className = "fixed inset-0 z-50 flex items-center justify-center";
+      wrap.innerHTML = `
+        <div class="absolute inset-0 bg-black/60" onclick="this.parentElement.remove()"></div>
+        <div class="relative w-[92vw] max-w-2xl p-5 rounded-2xl border border-habla-200 bg-white shadow-xl">${html}</div>
+      `;
+      root.appendChild(wrap);
+      return wrap;
+    };
+
+    const requireAuth = (actionName="esta acción") => {
+      if (!state.isAuth) {
+        openLoginModal(actionName);
+        return false;
+      }
+      return true;
+    };
+
+    // ---------- Fake Data ----------
+    const seedTickets = [
+      {
+        userId: "guest_alice",
+        userName: "Alice",
+        matchId: "m3",
+        fee: 25,
+        combo: { p1x2: "Home", btts: "Yes", over25: "Yes", red: "No", exact: { h: 2, a: 1 } },
+        ts: nowIso()
+      },
+      {
+        userId: "guest_bob",
+        userName: "Bob",
+        matchId: "m3",
+        fee: 25,
+        combo: { p1x2: "Draw", btts: "No", over25: "No", red: "No", exact: { h: 1, a: 1 } },
+        ts: nowIso()
+      },
+      {
+        userId: "guest_carla",
+        userName: "Carla",
+        matchId: "m2",
+        fee: 30,
+        combo: { p1x2: "Home", btts: "Yes", over25: "Yes", red: "Yes", exact: { h: 2, a: 0 } },
+        ts: nowIso()
+      }
+    ];
+
+    const state = {
+      isAuth: false,
+      user: null,
+      wallet: {
+        lukas: 12450,
+        movements: [
+          { id: uid(), type: "credit", amount: 4200, note: "payout:torneo_m3", ts: nowIso() },
+          { id: uid(), type: "debit", amount: 1800, note: "redeem:gift_card", ts: nowIso() },
+          { id: uid(), type: "credit", amount: 3000, note: "recarga:tarjeta", ts: nowIso() },
+        ], // movements: {id, type:credit|debit, amount, note, ts}
+        topUps: [
+          { id: uid(), amount: 3200, method: "card", status: "acreditado", ts: nowIso(), reference: "PSP autorizado" },
+          { id: uid(), amount: 2400, method: "yape", status: "acreditado", ts: nowIso(), reference: "QR escaneado" },
+        ], // topUps: {id, amount, method, status, ts, reference}
+        withdrawals: [
+          { id: uid(), amount: 2500, status: "pending_review", destination: "Cuenta bancaria verificada", ts: nowIso() },
+        ] // withdrawals: {id, amount, status, destination, ts}
+      },
+      tickets: seedTickets.map(seed => ({
+        ...seed,
+        id: uid(),
+        hash: hashCombo(seed.combo)
+      })), // {id, userId, matchId, fee, combo, hash, ts, points, position}
+      orders: [],  // store redemptions
+      notifications: [],
+      // Matches / Tournaments
+      matches: [
+        {
+          id: "m1",
+          home: "Manchester United", away: "Liverpool FC",
+          homeCode: "MUN", awayCode: "LIV",
+          kickoff: Date.now() + 48*60*1000,  // 48 mins
+          entryFee: 50, prizePool: 4800, players: 142,
+          status: "open", score: null
+        },
+        {
+          id: "m2",
+          home: "FC Barcelona", away: "Real Madrid",
+          homeCode: "BAR", awayCode: "RMA",
+          kickoff: Date.now() - 12*60*1000,  // started 12 mins ago
+          entryFee: 30, prizePool: 2490, players: 80,
+          status: "locked", score: "1-0 12'"
+        },
+        {
+          id: "m3",
+          home: "Chelsea FC", away: "Arsenal FC",
+          homeCode: "CHE", awayCode: "ARS",
+          kickoff: Date.now() - 50*60*1000,
+          entryFee: 25, prizePool: 1575, players: 67,
+          status: "in_play", score: "2-1 HT"
+        }
+      ],
+      store: [
+        {id:"s1", name:"Camiseta de fútbol", price: 5000, type:"physical", stock: 5},
+        {id:"s2", name:"Entradas al partido (regalo)", price: 1200, type:"digital", stock: 25},
+        {id:"s3", name:"Tarjeta de regalo de $25", price: 2500, type:"digital", stock: 50},
+        {id:"s4", name:"PlayStation 5", price: 45000, type:"physical", stock: 1},
+      ],
+      topPlayersToday: [
+        {name:"PlayerOne", pts:18},
+        {name:"FootballFan", pts:16},
+        {name:"PredictoPro", pts:15}
+      ],
+      transparency: {},
+      revealed: {},
+      leaderboards: {
+        // filled when finished (demo stub)
+      },
+      matchFacts: {},
+      settlements: {},
+      events: [],
+      riskFlags: []
+    };
+
+    state.tickets.forEach(ticket => {
+      if (!state.transparency[ticket.matchId]) state.transparency[ticket.matchId] = [];
+      state.transparency[ticket.matchId].push({ user: ticket.userName || ticket.userId, combo: ticket.combo });
+    });
+    state.matches.forEach(match => {
+      if (match.status === "in_play" || match.status === "finished") {
+        state.revealed[match.id] = [...(state.transparency[match.id] || [])];
+      }
+    });
+
+    // Seed demo user for quick testing (not logged by default)
+    const demoUser = {
+      id: "u1",
+      email: "gustavo@example.com",
+      password: "demo1234",
+      firstName: "Gustavo",
+      lastName: "Ramírez",
+      nickname: "GusR",
+      birthDate: "1990-05-12",
+      country: "Perú",
+      acceptances: {
+        terms: true,
+        privacy: true,
+        responsible: true,
+        adult: true
+      },
+      emailVerified: true,
+      ageVerified: true,
+      createdAt: nowIso()
+    };
+
+    function logEvent(type, detail={}){
+      state.events.unshift({ id: uid(), type, detail, ts: nowIso() });
+    }
+
+    function recordRisk(detail){
+      const flag = { id: uid(), ...detail, ts: nowIso() };
+      state.riskFlags.unshift(flag);
+      logEvent("Risk.Flagged", flag);
+    }
+
+    // ---------- Auth ----------
+    function renderAuthArea() {
+      const c = document.getElementById('authArea');
+      if (!state.isAuth) {
+        c.innerHTML = `<button class="btn" onclick="openLoginModal()">Iniciar sesión / Registrarse</button>`;
+        $('#balancePill').classList.add('hidden');
+        setUserMenuOpen(false);
+        return;
+      }
+      const displayName = userDisplayName(state.user);
+      c.innerHTML = `
+        <div class="relative inline-block" data-user-menu-wrapper>
+          <button type="button" class="btn" onclick="toggleUserMenu(event)">Hola, ${displayName} ▾</button>
+          <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 card p-2 text-sm">
+            <a href="#/profile" class="block px-3 py-2 rounded-md hover:bg-habla-100">Perfil</a>
+            <a href="#/history" class="block px-3 py-2 rounded-md hover:bg-habla-100">Historial</a>
+            <a href="#/wallet" class="block px-3 py-2 rounded-md hover:bg-habla-100">Billetera</a>
+            <button class="w-full text-left px-3 py-2 rounded-md hover:bg-habla-100" onclick="logout()">Cerrar sesión</button>
+          </div>
+        </div>
+      `;
+      $('#lukasBalance').textContent = fmt(state.wallet.lukas);
+      $('#balancePill').classList.remove('hidden');
+
+      const wrapper = c.querySelector('[data-user-menu-wrapper]');
+      if (wrapper) {
+        wrapper.onmouseenter = () => {
+          clearTimeout(userMenuCloseTimer);
+          toggleUserMenu(null, true);
+        };
+        wrapper.onmouseleave = () => {
+          clearTimeout(userMenuCloseTimer);
+          userMenuCloseTimer = setTimeout(() => toggleUserMenu(null, false), 150);
+        };
+      }
+
+      if (!userMenuOutsideListenerBound) {
+        document.addEventListener('click', (event) => {
+          if (!event.target.closest('[data-user-menu-wrapper]')) {
+            toggleUserMenu(null, false);
+          }
+        });
+        userMenuOutsideListenerBound = true;
+      }
+    }
+
+    function toggleUserMenu(ev, forceState) {
+      if (ev) ev.stopPropagation();
+      const m = document.getElementById('userMenu');
+      if (!m) return;
+      const shouldOpen = typeof forceState === 'boolean' ? forceState : m.classList.contains('hidden');
+      setUserMenuOpen(shouldOpen);
+    }
+    function toggleMobileMenu(){
+      const m = document.getElementById('mobileMenu');
+      m.classList.toggle('hidden');
+    }
+
+    function openLoginModal(actionName){
+      authModalMode = 'login';
+      pendingAuthAction = actionName || '';
+      openModal(`
+        <div class="flex items-start justify-between">
+          <h2 class="text-lg font-bold">Iniciar sesión / Registrarse</h2>
+          <button class="btn" onclick="this.closest('.fixed').remove()">✕</button>
+        </div>
+        <p class="mt-2 text-sm text-habla-600">Inicia sesión para participar en torneos, canjear premios y usar tu billetera.</p>
+        <div class="mt-4">
+          <div id="authTabs" class="flex gap-2 text-sm">
+            <button type="button" class="flex-1 btn" data-auth-tab="login" onclick="switchAuthModal('login')">Iniciar sesión</button>
+            <button type="button" class="flex-1 btn" data-auth-tab="register" onclick="switchAuthModal('register')">Crear cuenta</button>
+          </div>
+          <div id="authModalBody" class="mt-4"></div>
+        </div>
+        <p id="authActionRequirement" class="mt-3 text-xs text-habla-500 ${actionName ? '' : 'hidden'}">${actionName ? `Requerido para: <strong>${actionName}</strong>` : ''}</p>
+      `);
+      renderAuthModalBody();
+    }
+
+    function switchAuthModal(mode){
+      authModalMode = mode;
+      renderAuthModalBody();
+    }
+
+    function renderAuthModalBody(){
+      const body = document.getElementById('authModalBody');
+      if (!body) return;
+      if (authModalMode === 'login') {
+        body.innerHTML = `
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-habla-600 mb-1">Correo electrónico</label>
+              <input id="loginEmail" class="input" type="email" placeholder="tu-correo@ejemplo.com" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-habla-600 mb-1">Contraseña</label>
+              <input id="loginPassword" class="input" type="password" placeholder="Tu contraseña" />
+            </div>
+            <button class="btn-primary w-full" onclick="demoLogin()">Iniciar sesión (demo)</button>
+            <button class="btn w-full" onclick="guestBrowse()">Seguir como visitante</button>
+            <p class="text-xs text-habla-500">Modo demostración: ingresa cualquier correo y contraseña para acceder con un usuario de prueba.</p>
+          </div>
+        `;
+      } else {
+        body.innerHTML = `
+          <form id="registerForm" class="space-y-3" onsubmit="registerUser(event)">
+            <div class="grid md:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-habla-600 mb-1">Correo electrónico</label>
+                <input id="registerEmail" name="email" class="input" type="email" required placeholder="tu-correo@ejemplo.com" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-habla-600 mb-1">Contraseña</label>
+                <input id="registerPassword" name="password" class="input" type="password" required placeholder="Mínimo 8 caracteres" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-habla-600 mb-1">Nombres</label>
+                <input id="registerFirstName" name="firstName" class="input" required placeholder="Tus nombres" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-habla-600 mb-1">Apellidos</label>
+                <input id="registerLastName" name="lastName" class="input" required placeholder="Tus apellidos" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-habla-600 mb-1">Nickname / Nombre visible</label>
+                <input id="registerNickname" name="nickname" class="input" required placeholder="Ej. Futbolero" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-habla-600 mb-1">Fecha de nacimiento</label>
+                <input id="registerBirthDate" name="birthDate" class="input" type="date" required />
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-habla-600 mb-1">País de residencia</label>
+                <select id="registerCountry" name="country" class="input" required>
+                  <option value="">Selecciona un país</option>
+                  <option>Argentina</option>
+                  <option>Chile</option>
+                  <option>Colombia</option>
+                  <option>Ecuador</option>
+                  <option>México</option>
+                  <option>Perú</option>
+                  <option>Uruguay</option>
+                  <option>Otro</option>
+                </select>
+              </div>
+            </div>
+            <div class="space-y-2 text-sm">
+              <label class="flex items-start gap-2">
+                <input type="checkbox" id="acceptTerms" required class="mt-1" />
+                <span>Acepto los <a href="#/terms" class="link">Términos y Condiciones</a>.</span>
+              </label>
+              <label class="flex items-start gap-2">
+                <input type="checkbox" id="acceptPrivacy" required class="mt-1" />
+                <span>Acepto la <a href="#/privacy" class="link">Política de Privacidad</a>.</span>
+              </label>
+              <label class="flex items-start gap-2">
+                <input type="checkbox" id="acceptResponsible" required class="mt-1" />
+                <span>Acepto la <a href="#/responsible" class="link">Política de Juego Responsable</a>.</span>
+              </label>
+              <label class="flex items-start gap-2">
+                <input type="checkbox" id="acceptAdult" required class="mt-1" />
+                <span>Declaro ser mayor de 18 años.</span>
+              </label>
+            </div>
+            <button type="submit" class="btn-primary w-full">Crear cuenta</button>
+          </form>
+        `;
+      }
+
+      $$('#authTabs [data-auth-tab]').forEach(btn => {
+        btn.classList.toggle('btn-primary', btn.dataset.authTab === authModalMode);
+      });
+
+      const requirement = document.getElementById('authActionRequirement');
+      if (requirement) {
+        requirement.classList.toggle('hidden', !pendingAuthAction);
+        requirement.innerHTML = pendingAuthAction ? `Requerido para: <strong>${pendingAuthAction}</strong>` : '';
+      }
+    }
+
+    function demoLogin(){
+      state.isAuth = true;
+      state.user = { ...demoUser };
+      const emailInput = document.getElementById('loginEmail');
+      const passInput = document.getElementById('loginPassword');
+      if (emailInput && emailInput.value) {
+        state.user.email = emailInput.value.trim().toLowerCase();
+      }
+      if (passInput && passInput.value) {
+        state.user.password = passInput.value;
+      }
+      state.user.lastLoginAt = nowIso();
+      if (state.wallet.lukas === 0) {
+        // Welcome credit (demo)
+        creditWallet(2450, "welcome_bonus");
+      }
+      renderAuthArea();
+      toast("¡Bienvenido de nuevo!");
+      logEvent("Auth.Login", { userId: state.user.id, email: state.user.email });
+      $('#modalRoot').innerHTML = "";
+      router();
+    }
+    function guestBrowse(){
+      $('#modalRoot').innerHTML = "";
+      toast("Exploras como invitado. Inicia sesión para unirte a los torneos.");
+    }
+    function registerUser(event){
+      if (event) event.preventDefault();
+      const form = document.getElementById('registerForm');
+      if (!form) return;
+      const email = form.email.value.trim().toLowerCase();
+      const password = form.password.value.trim();
+      const firstName = form.firstName.value.trim();
+      const lastName = form.lastName.value.trim();
+      const nickname = form.nickname.value.trim();
+      const birthDate = form.birthDate.value;
+      const country = form.country.value;
+      const acceptances = {
+        terms: document.getElementById('acceptTerms').checked,
+        privacy: document.getElementById('acceptPrivacy').checked,
+        responsible: document.getElementById('acceptResponsible').checked,
+        adult: document.getElementById('acceptAdult').checked
+      };
+
+      if (!email || !password || !firstName || !lastName || !nickname || !birthDate || !country) {
+        toast('Completa todos los campos requeridos.', 'warn');
+        return;
+      }
+      if (password.length < 8) {
+        toast('La contraseña debe tener al menos 8 caracteres.', 'warn');
+        return;
+      }
+      if (Object.values(acceptances).some(v => !v)) {
+        toast('Debes aceptar todas las políticas y declaraciones.', 'warn');
+        return;
+      }
+
+      const age = calculateAge(birthDate);
+      const ageVerified = typeof age === 'number' && age >= 18;
+      if (!ageVerified) {
+        toast('No pudimos verificar que seas mayor de edad. Revisa tus datos.', 'warn');
+      }
+
+      state.isAuth = true;
+      state.user = {
+        id: uid(),
+        email,
+        password,
+        firstName,
+        lastName,
+        nickname,
+        birthDate,
+        country,
+        acceptances,
+        emailVerified: false,
+        ageVerified,
+        createdAt: nowIso(),
+        lastLoginAt: nowIso()
+      };
+        state.wallet.lukas = 0;
+        state.wallet.movements = [];
+        state.wallet.topUps = [];
+        state.wallet.withdrawals = [];
+      renderAuthArea();
+      toast('¡Cuenta creada! Revisa tu correo para verificar la cuenta.', 'success');
+      logEvent('Auth.Register', { userId: state.user.id, email: state.user.email, country: state.user.country });
+      if (!ageVerified) {
+        recordRisk({ service: 'Auth', reason: 'Edad no verificada', birthDate });
+      }
+      $('#modalRoot').innerHTML = "";
+      router();
+    }
+
+    function openPasswordChangeDialog(){
+      if (!state.isAuth || !state.user) {
+        openLoginModal('cambiar tu contraseña');
+        return;
+      }
+      openModal(`
+        <div class="flex items-start justify-between">
+          <h2 class="text-lg font-bold">Cambiar contraseña</h2>
+          <button class="btn" onclick="this.closest('.fixed').remove()">✕</button>
+        </div>
+        <form class="mt-4 space-y-3" onsubmit="changePassword(event)">
+          <div>
+            <label class="block text-xs font-semibold text-habla-600 mb-1">Contraseña actual</label>
+            <input id="currentPassword" type="password" class="input" placeholder="Tu contraseña actual" required />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-habla-600 mb-1">Nueva contraseña</label>
+            <input id="newPassword" type="password" class="input" placeholder="Mínimo 8 caracteres" required />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-habla-600 mb-1">Confirma la nueva contraseña</label>
+            <input id="confirmNewPassword" type="password" class="input" placeholder="Repite la nueva contraseña" required />
+          </div>
+          <button type="submit" class="btn-primary w-full">Actualizar contraseña</button>
+        </form>
+      `);
+    }
+
+    function changePassword(event){
+      if (event) event.preventDefault();
+      if (!state.isAuth || !state.user) return;
+      const current = document.getElementById('currentPassword');
+      const next = document.getElementById('newPassword');
+      const confirm = document.getElementById('confirmNewPassword');
+      if (!current || !next || !confirm) return;
+      if (state.user.password && current.value !== state.user.password) {
+        toast('La contraseña actual no coincide.', 'error');
+        return;
+      }
+      if (next.value.length < 8) {
+        toast('La nueva contraseña debe tener al menos 8 caracteres.', 'warn');
+        return;
+      }
+      if (next.value !== confirm.value) {
+        toast('La confirmación no coincide.', 'warn');
+        return;
+      }
+      state.user.password = next.value;
+      toast('¡Contraseña actualizada con éxito!', 'success');
+      logEvent('Auth.PasswordChanged', { userId: state.user.id });
+      $('#modalRoot').innerHTML = "";
+    }
+    function logout(){
+      state.isAuth = false;
+      state.user = null;
+      renderAuthArea();
+      toast("Sesión cerrada");
+      logEvent("Auth.Logout", {});
+      router();
+    }
+
+    // ---------- Wallet / Payments ----------
+    let topUpDraft = { method: 'yape', amount: 500 };
+    function creditWallet(amount, note){
+      state.wallet.lukas += amount;
+      state.wallet.movements.unshift({ id:uid(), type:"credit", amount, note, ts: nowIso() });
+      $('#lukasBalance').textContent = fmt(state.wallet.lukas);
+      logEvent("Wallet.CreditPosted", { amount, note });
+    }
+    function debitWallet(amount, note){
+      if (state.wallet.lukas < amount) return false;
+      state.wallet.lukas -= amount;
+      state.wallet.movements.unshift({ id:uid(), type:"debit", amount, note, ts: nowIso() });
+      $('#lukasBalance').textContent = fmt(state.wallet.lukas);
+      logEvent("Wallet.DebitPosted", { amount, note });
+      return true;
+    }
+    function selectTopUpMethod(method, containerId='topUpInline'){
+      topUpDraft.method = method;
+      updateTopUpSummary(containerId);
+    }
+    function setTopUpAmount(amount, containerId='topUpInline'){
+      topUpDraft.amount = amount;
+      const container = document.getElementById(containerId);
+      if (container) {
+        const input = container.querySelector('.topup-amount-input');
+        if (input) input.value = amount || '';
+      }
+      updateTopUpSummary(containerId);
+    }
+    function updateTopUpSummary(containerId='topUpInline'){
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const amountInput = container.querySelector('.topup-amount-input');
+      const amount = parseInt(amountInput?.value || topUpDraft.amount || 0, 10);
+      topUpDraft.amount = amount;
+      if (amountInput && !amountInput.value) amountInput.value = topUpDraft.amount || '';
+      container.querySelectorAll('.topup-method').forEach(btn => {
+        const active = btn.dataset.method === topUpDraft.method;
+        btn.classList.toggle('btn-primary', active);
+        btn.classList.toggle('border-black', active);
+      });
+      ['yape','card','bank'].forEach(key => {
+        const block = container.querySelector(`[data-fields="${key}"]`);
+        if (block) block.classList.toggle('hidden', key !== topUpDraft.method);
+      });
+      const summary = container.querySelector('[data-summary]');
+      if (summary) {
+        summary.innerHTML = `
+          <div class="flex items-center justify-between text-sm">
+            <span>Método</span><span class="font-semibold">${methodLabel(topUpDraft.method)}</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span>Monto a recargar</span><span class="font-semibold">${fmt(Math.max(amount,0))} Lukas</span>
+          </div>
+          <div class="flex items-center justify-between text-xs text-habla-600">
+            <span>Abono estimado</span><span class="text-green-700 font-semibold">Instantáneo</span>
+          </div>
+        `;
+      }
+    }
+    function submitTopUpFromInline(){
+      const container = document.getElementById('topUpInline');
+      if (!container) return;
+      const amount = parseInt(container.querySelector('.topup-amount-input')?.value || topUpDraft.amount || 0, 10);
+      const reference = container.querySelector('[name="bankRef"]')?.value?.trim() || container.querySelector('[name="cvv"]')?.value?.trim() || container.querySelector('[name="yapeAlias"]')?.value?.trim();
+      const contact = container.querySelector('[name="contactEmail"]')?.value?.trim();
+      const holder = container.querySelector('[name="fullName"]')?.value?.trim();
+      const methodData = {
+        yape: { phone: container.querySelector('[name="yapeAlias"]')?.value?.trim() },
+        card: {
+          card: container.querySelector('[name="cardNumber"]')?.value?.trim(),
+          exp: container.querySelector('[name="cardExp"]')?.value?.trim(),
+          cvv: container.querySelector('[name="cvv"]')?.value?.trim()
+        },
+        bank: {
+          bank: container.querySelector('[name="bankName"]')?.value?.trim(),
+          reference: container.querySelector('[name="bankRef"]')?.value?.trim()
+        }
+      }[topUpDraft.method] || {};
+      performTopUp({ amount, method: topUpDraft.method, reference, contact, holder, methodData });
+    }
+    function openTopUp(presetAmount=500, presetMethod='yape'){
+      topUpDraft = { method: presetMethod, amount: presetAmount };
+      const go = () => {
+        const panel = document.getElementById('topUpInline');
+        if (!panel) return;
+        const amountInput = panel.querySelector('.topup-amount-input');
+        if (amountInput) amountInput.value = presetAmount || '';
+        updateTopUpSummary('topUpInline');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        amountInput?.focus({ preventScroll: true });
+      };
+      if (window.location.hash !== '#/wallet') {
+        window.location.hash = '#/wallet';
+        setTimeout(go, 180);
+      } else {
+        go();
+      }
+      if (!state.isAuth) openLoginModal("recarga de Lukas");
+    }
+    function performTopUp(payload){
+      const data = typeof payload === 'number' ? { amount: payload } : (payload || {});
+      const amount = parseInt(data.amount, 10);
+      if (!amount || amount < 100) { toast("Ingresa un monto válido", "warn"); return; }
+      if (!state.isAuth) { openLoginModal("recargar Lukas"); return; }
+      const method = data.method || 'yape';
+      logEvent("Payment.Initiated", { amount, method });
+      state.wallet.topUps.unshift({
+        id: uid(),
+        amount,
+        method,
+        status: "acreditado",
+        reference: data.reference || "Pago confirmado",
+        ts: nowIso(),
+        contact: data.contact || data.holder || ''
+      });
+      creditWallet(amount, `recarga:${method}`);
+      logEvent("Payment.Settled", { amount, method });
+      if (amount >= 10000) {
+        recordRisk({ service: "Pagos", reason: "Alta velocidad de recarga", amount });
+      }
+      toast(`Se acreditaron ${fmt(amount)} Lukas`, "success");
+      $('#modalRoot').innerHTML = "";
+    }
+
+    // ---------- Matches (Torneos) ----------
+    function nextLockCountdown(){
+      const open = state.matches.filter(m => m.status==="open");
+      if (!open.length) return {label:"Sin cierres activos", remaining:-1};
+      const nearest = open.reduce((a,b)=> a.kickoff < b.kickoff ? a : b);
+      const diff = nearest.kickoff - Date.now();
+      if (diff <= 0) return {label:"Cerrando...", remaining:0};
+      const mm = Math.floor(diff/60000);
+      const ss = Math.floor((diff%60000)/1000);
+      return {label:`${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`, remaining:diff};
+    }
+
+    function matchesView(){
+      const tabs = ["open","locked","in_play","finished"];
+      const activeTab = (new URL(location.href)).hash.split("?")[0].split("/")[2] || "open";
+      const countdown = nextLockCountdown();
+
+      const sidebar = `
+        <aside class="hidden lg:block lg:col-span-4">
+          <div class="card p-4">
+            <div class="text-sm text-habla-600">Próximo cierre</div>
+            <div class="text-3xl font-black mt-1">${countdown.label}</div>
+            <div class="text-xs text-habla-500">Hasta el cierre más próximo</div>
+            <button class="btn-primary w-full mt-4" onclick="quickCreateTicket()">Crear combinada rápida</button>
+          </div>
+          <div class="card p-4 mt-4">
+            <div class="font-semibold mb-2">Mejores jugadores hoy</div>
+            <ul class="text-sm space-y-1">
+              ${state.topPlayersToday.map(p => `<li class="flex justify-between"><span>${p.name}</span><span class="font-semibold">${p.pts} pts</span></li>`).join('')}
+            </ul>
+          </div>
+          <div class="card p-4 mt-4">
+            <div class="font-semibold mb-3">Destacados de la tienda</div>
+            ${state.store.slice(0,2).map(i => `
+              <div class="flex items-center justify-between mb-2">
+                <div>
+                  <div class="text-sm font-medium">${i.name}</div>
+                  <div class="text-xs text-habla-500">${fmt(i.price)} Lukas</div>
+                </div>
+                <a href="#/store" class="btn">Ver</a>
+              </div>
+            `).join('')}
+            <a href="#/store" class="btn-primary w-full mt-2">Ver tienda</a>
+          </div>
+        </aside>
+      `;
+
+      const list = state.matches
+        .filter(m => activeTab==="open" ? m.status==="open" :
+                      activeTab==="locked" ? m.status==="locked" :
+                      activeTab==="in_play" ? m.status==="in_play" :
+                      m.status==="finished")
+        .map(m => matchCard(m)).join('');
+
+      return `
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <section class="lg:col-span-8">
+            <div class="flex items-center justify-between mb-4">
+              <h1 class="text-xl font-bold">Partidos de fútbol</h1>
+              <div class="flex gap-2">
+                ${tabs.map(t => `
+                  <a class="btn ${activeTab===t?'btn-primary':''}" href="#/matches/${t}">
+                    ${t==="open"?"Abiertos":t==="locked"?"Bloqueados":t==="in_play"?"En juego":"Finalizados"}
+                  </a>
+                `).join('')}
+              </div>
+            </div>
+            <div id="matchesList" class="space-y-4">
+              ${list || `<div class="text-sm text-habla-600">No hay partidos en esta pestaña.</div>`}
+            </div>
+          </section>
+          ${sidebar}
+        </div>
+      `;
+    }
+
+    function matchCard(m){
+      const statusTag = m.status==="open" ? `<span class="tag">Abierto · Cierra en ${Math.max(0, Math.floor((m.kickoff-Date.now())/60000))}m</span>` :
+                        m.status==="locked" ? `<span class="tag">Bloqueado · iniciado</span>` :
+                        m.status==="in_play" ? `<span class="tag">En juego</span>` :
+                        `<span class="tag">Finalizado</span>`;
+      const cta =
+        m.status==="open" ? `<button class="btn-primary w-full mt-3" onclick="createTicket('${m.id}')">Crear combinada</button>` :
+        m.status==="locked" ? `<div class="w-full mt-3 btn cursor-default">Ventas cerradas</div>` :
+        m.status==="in_play" ? `<a class="btn-primary w-full mt-3" href="#/match/${m.id}">Ver resultados en vivo</a>` :
+        `<a class="btn-primary w-full mt-3" href="#/match/${m.id}">Ver resultados</a>`;
+
+      return `
+        <article class="card p-4">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              ${statusTag}
+              <h3 class="mt-2 text-lg font-bold">${m.home} <span class="text-habla-400">VS</span> ${m.away}</h3>
+              <div class="text-sm text-habla-600 mt-1">
+                Costo de entrada <strong>${m.entryFee} Lukas</strong> · <span class="ml-2">Jugadores: ${m.players}</span>
+                · <span class="ml-2">Pozo: ${fmt(m.prizePool)} Lukas</span>
+                ${m.score ? `· <span class="ml-2">En vivo: ${m.score}</span>` : ``}
+              </div>
+            </div>
+            <div class="text-sm text-habla-600 text-right">
+              <div>${new Date(m.kickoff).toLocaleString()}</div>
+              <a class="link text-xs" href="#/match/${m.id}">Detalle del partido</a>
+            </div>
+          </div>
+          ${cta}
+        </article>
+      `;
+    }
+
+    function matchDetailView(matchId){
+      const m = state.matches.find(x=>x.id===matchId);
+      if (!m) return `<div>Partido no encontrado</div>`;
+
+      const canSubmit = m.status==="open";
+      const showTransparency = m.status==="in_play" || m.status==="finished";
+      const showLeaderboard = m.status==="finished";
+      const operationsCard = `
+            <div class="card p-4 mt-4">
+              <div class="font-semibold mb-2">Operaciones del flujo</div>
+              <div class="flex flex-wrap gap-2">
+                ${m.status==="open" ? `<button class="btn" onclick="lockMatch('${m.id}')">Bloquear ventas</button>` : ``}
+                ${m.status==="locked" ? `<button class="btn" onclick="startMatch('${m.id}')">Iniciar partido</button>` : ``}
+                ${m.status==="in_play" ? `<button class="btn" onclick="openFinalizeMatch('${m.id}')">Finalizar partido</button>` : ``}
+                ${m.status==="finished" && !state.settlements[m.id] ? `<button class="btn" onclick="settlePayouts('${m.id}')">Liquidar premios</button>` : ``}
+              </div>
+              <p class="text-xs text-habla-500 mt-3">Simula Torneos, Oráculos, Scoring, tabla de posiciones y Liquidación paso a paso.</p>
+              ${state.settlements[m.id] ? `<p class="text-xs text-green-600 mt-2">Premios abonados en la billetera.</p>` : ``}
+            </div>`;
+
+      return `
+        <div class="flex items-center justify-between mb-4">
+          <a href="#/matches" class="link">← Volver a Partidos</a>
+          <div class="text-sm text-habla-600">${new Date(m.kickoff).toLocaleString()}</div>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="tag">${statusLabel(m.status)}</div>
+              <h1 class="text-2xl font-black mt-2">${m.home} <span class="text-habla-400">VS</span> ${m.away}</h1>
+              <div class="text-sm text-habla-600 mt-1">Costo de entrada <strong>${m.entryFee} Lukas</strong> · Pozo ${fmt(m.prizePool)} Lukas</div>
+              ${m.score ? `<div class="mt-1 text-sm">En vivo: <strong>${m.score}</strong></div>` : ``}
+            </div>
+            <div class="space-x-2">
+              ${canSubmit ? `<button class="btn-primary" onclick="createTicket('${m.id}')">Crear combinada</button>` : ``}
+              ${showTransparency ? `<button class="btn" onclick="openTransparency('${m.id}')">Transparencia</button>` : ``}
+              ${showLeaderboard ? `<button class="btn" onclick="openLeaderboard('${m.id}')">Tabla de posiciones</button>` : ``}
+            </div>
+          </div>
+        </div>
+
+        <section class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2">
+            <div class="card p-4">
+              <div class="font-semibold mb-2">Cronología del partido (demo)</div>
+              <div class="h-24 flex items-center justify-center text-sm text-habla-500">Placeholder del feed de eventos</div>
+            </div>
+            <div class="card p-4 mt-4">
+              <div class="font-semibold mb-2">Tus combinadas para este partido</div>
+              ${myTicketsForMatch(matchId)}
+            </div>
+            ${operationsCard}
+          </div>
+          <aside>
+            <div class="card p-4">
+              <div class="font-semibold mb-2">Reglas y puntajes</div>
+              <ul class="text-sm space-y-1">
+                <li>1X2 (Local/Empate/Visita) — <strong>3 pts</strong></li>
+                <li>Ambos equipos anotan — <strong>2 pts</strong></li>
+                <li>Más de 2.5 goles — <strong>2 pts</strong></li>
+                <li>Habrá tarjeta roja — <strong>6 pts</strong></li>
+                <li>Marcador exacto — <strong>8 pts</strong></li>
+              </ul>
+            </div>
+          </aside>
+        </section>
+      `;
+    }
+
+    function myTicketsForMatch(matchId){
+      const items = state.tickets.filter(t => t.matchId===matchId && state.user && t.userId===state.user.id);
+      if (!state.isAuth) return `<div class="text-sm text-habla-600">Inicia sesión para ver tus combinadas.</div>`;
+      if (!items.length) return `<div class="text-sm text-habla-600">Aún no tienes combinadas.</div>`;
+      return `
+        <ul class="divide-y divide-habla-200">
+          ${items.map(t => `
+            <li class="py-3 text-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="font-medium">Combinada #${t.id.slice(0,6)}</div>
+                  <div class="text-habla-600">1X2: ${p1x2Label(t.combo.p1x2)} · BTTS: ${yesNoLabel(t.combo.btts)} · O2.5: ${yesNoLabel(t.combo.over25)} · Roja: ${yesNoLabel(t.combo.red)} · Exacto: ${t.combo.exact.h}-${t.combo.exact.a}</div>
+                  <div class="text-xs text-habla-500 mt-1">Enviada ${new Date(t.ts).toLocaleString()}</div>
+                </div>
+                <div class="text-right">
+                  <div class="pill">Costo ${t.fee} Lukas</div>
+                  ${typeof t.points==='number' ? `<div class="mt-1 text-sm">Pts: <strong>${t.points}</strong> · Pos.: ${t.position ?? '-'}</div>` : ``}
+                </div>
+              </div>
+            </li>
+          `).join('')}
+        </ul>
+      `;
+    }
+
+    // ---------- Ticket creation (Combinadas) ----------
+    function createTicket(matchId){
+      const m = state.matches.find(x=>x.id===matchId);
+      if (!m) return;
+      if (m.status!=="open") { toast("Las ventas están cerradas", "warn"); return; }
+      if (!requireAuth("crear una combinada")) return;
+
+      openModal(`
+        <div class="flex items-start justify-between">
+          <h2 class="text-lg font-bold">Crear combinada · ${m.home} vs ${m.away}</h2>
+          <button class="btn" onclick="this.closest('.fixed').remove()">✕</button>
+        </div>
+        <form id="ticketForm" class="mt-4 space-y-4">
+          <div>
+            <label class="block text-sm font-semibold mb-1">1) Local / Empate / Visita (3 pts)</label>
+            <div class="grid grid-cols-3 gap-2">
+              ${["Home","Draw","Away"].map(v => `
+                <label class="flex items-center gap-2 border rounded-xl px-3 py-2 cursor-pointer">
+                  <input type="radio" name="p1x2" value="${v}" required/> ${p1x2Label(v)}
+                </label>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-1">2) Ambos anotan (2 pts)</label>
+              <select name="btts" class="input" required>
+                <option value="">Selecciona</option>
+                <option value="Yes">Sí</option><option value="No">No</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1">3) Más de 2.5 goles (2 pts)</label>
+              <select name="over25" class="input" required>
+                <option value="">Selecciona</option>
+                <option value="Yes">Sí</option><option value="No">No</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1">4) ¿Habrá roja? (6 pts)</label>
+              <select name="red" class="input" required>
+                <option value="">Selecciona</option>
+                <option value="Yes">Sí</option><option value="No">No</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">5) Marcador exacto (8 pts)</label>
+            <div class="flex items-center gap-2">
+              <input name="h" type="number" min="0" class="input w-24" placeholder="${m.home}"/>
+              <span class="text-habla-400">-</span>
+              <input name="a" type="number" min="0" class="input w-24" placeholder="${m.away}"/>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between mt-2">
+            <div class="text-sm text-habla-600">Costo de entrada: <strong>${m.entryFee} Lukas</strong></div>
+            <button class="btn-primary" onclick="submitTicket(event,'${m.id}')">Enviar combinada</button>
+          </div>
+          <p class="text-xs text-habla-500">Nota: No se pueden editar combinadas. Puedes enviar múltiples combinadas siempre que no sean idénticas.</p>
+        </form>
+      `);
+    }
+
+    function submitTicket(e, matchId){
+      e.preventDefault();
+      const m = state.matches.find(x=>x.id===matchId);
+      const form = document.getElementById('ticketForm');
+      const combo = {
+        p1x2: form.p1x2.value,
+        btts: form.btts.value,
+        over25: form.over25.value,
+        red: form.red.value,
+        exact: {h: parseInt(form.h.value||0), a: parseInt(form.a.value||0)}
+      };
+      const hash = hashCombo(combo);
+
+      // Unicidad por usuario+partido+hash
+      const dup = state.tickets.find(t => t.userId===state.user.id && t.matchId===matchId && t.hash===hash);
+      if (dup) { toast("Ya enviaste una combinada idéntica para este partido.", "warn"); return; }
+
+      if (!debitWallet(m.entryFee, `ticket_fee:${matchId}`)) {
+        toast("Saldo insuficiente", "error"); return;
+      }
+
+      const ticket = {
+        id: uid(), userId: state.user.id, userName: userDisplayName(state.user), matchId,
+        fee: m.entryFee, combo, hash, ts: nowIso()
+      };
+      state.tickets.unshift(ticket);
+      if (!state.transparency[matchId]) state.transparency[matchId] = [];
+      state.transparency[matchId].push({ user: ticket.userName, combo });
+      if (m.status === "in_play" || m.status === "finished") {
+        state.revealed[matchId] = [...state.transparency[matchId]];
+      }
+      logEvent("Ticket.Submitted", { matchId, ticketId: ticket.id });
+      toast("Combinada enviada ✓", "success");
+      $('#modalRoot').innerHTML = "";
+      router();
+    }
+
+    // ---------- Transparency & Leaderboard ----------
+    function openTransparency(matchId){
+      const match = state.matches.find(x=>x.id===matchId);
+      const appended = state.transparency[matchId] || [];
+      const revealed = state.revealed[matchId] || [];
+      const isRevealed = match && (match.status === "in_play" || match.status === "finished");
+      openModal(`
+        <div class="flex items-start justify-between">
+          <h2 class="text-lg font-bold">Transparencia — Todas las combinadas</h2>
+          <button class="btn" onclick="this.closest('.fixed').remove()">✕</button>
+        </div>
+        <div class="mt-3 max-h-[60vh] overflow-auto">
+          <table class="w-full text-sm">
+            <thead><tr class="text-left text-habla-600">
+              <th class="py-2">Usuario</th><th>1X2</th><th>BTTS</th><th>O2.5</th><th>Roja</th><th>Exacto</th>
+            </tr></thead>
+            <tbody>
+              ${(isRevealed ? revealed : []).map(r => `
+                <tr class="border-t">
+                  <td class="py-2">${r.user}</td>
+                  <td>${p1x2Label(r.combo.p1x2)}</td>
+                  <td>${yesNoLabel(r.combo.btts)}</td>
+                  <td>${yesNoLabel(r.combo.over25)}</td>
+                  <td>${yesNoLabel(r.combo.red)}</td>
+                  <td>${r.combo.exact.h}-${r.combo.exact.a}</td>
+                </tr>
+              `).join('') || `<tr><td class="py-3 text-habla-600" colspan="6">Las combinadas se revelarán al inicio del partido.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-habla-500 mt-2">${isRevealed ? `Publicado automáticamente al iniciar el partido.` : `Combinadas en cola: ${appended.length}. Se revelan al kickoff.`}</p>
+      `);
+    }
+
+    function openLeaderboard(matchId){
+      const lb = state.leaderboards[matchId] || [];
+      openModal(`
+        <div class="flex items-start justify-between">
+          <h2 class="text-lg font-bold">Tabla de posiciones</h2>
+          <button class="btn" onclick="this.closest('.fixed').remove()">✕</button>
+        </div>
+        <div class="mt-3">
+          <table class="w-full text-sm">
+            <thead><tr class="text-left text-habla-600">
+              <th class="py-2">#</th><th>Usuario</th><th>Combinada</th><th>Pts</th><th>Premio</th>
+            </tr></thead>
+            <tbody>
+              ${lb.map((r,i)=>`
+                <tr class="border-t">
+                  <td class="py-2">${i+1}</td>
+                  <td>${r.user}</td>
+                  <td>#${r.ticketId.slice(0,6)}</td>
+                  <td><strong>${r.points}</strong></td>
+                  <td>${r.award ? `${fmt(r.award)} Lukas`: '-'}</td>
+                </tr>
+              `).join('') || `<tr><td class="py-3 text-habla-600" colspan="5">La tabla de posiciones estará disponible al finalizar el partido.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      `);
+    }
+
+    function lockMatch(matchId){
+      const match = state.matches.find(x=>x.id===matchId);
+      if (!match || match.status !== "open") { toast("El partido no está en estado abierto", "warn"); return; }
+      match.status = "locked";
+      logEvent("Match.StateChanged", { matchId, status: "locked" });
+      toast("Ventas bloqueadas — Partido bloqueado", "success");
+      router();
+    }
+
+    function startMatch(matchId){
+      const match = state.matches.find(x=>x.id===matchId);
+      if (!match || match.status !== "locked") { toast("Debes bloquear el partido primero", "warn"); return; }
+      match.status = "in_play";
+      logEvent("Match.StateChanged", { matchId, status: "in_play" });
+      revealTickets(matchId);
+      toast("Partido en juego — Combinadas reveladas", "success");
+      router();
+    }
+
+    function revealTickets(matchId){
+      const items = state.transparency[matchId] || [];
+      state.revealed[matchId] = [...items];
+      logEvent("Transparency.Revealed", { matchId, total: items.length });
+    }
+
+    function openFinalizeMatch(matchId){
+      const match = state.matches.find(x=>x.id===matchId);
+      if (!match) return;
+      if (match.status !== "in_play") { toast("El partido debe estar en juego", "warn"); return; }
+      openModal(`
+        <div class="flex items-start justify-between">
+          <h2 class="text-lg font-bold">Finalizar partido</h2>
+          <button class="btn" onclick="this.closest('.fixed').remove()">✕</button>
+        </div>
+        <form id="finalizeForm" class="mt-4 space-y-4" onsubmit="finalizeMatch(event, '${matchId}')">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-1">${match.home} goles</label>
+              <input class="input" type="number" name="homeScore" min="0" required />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1">${match.away} goles</label>
+              <input class="input" type="number" name="awayScore" min="0" required />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1">¿Hubo tarjeta roja?</label>
+            <select class="input" name="redCard" required>
+              <option value="">Selecciona</option>
+              <option value="Yes">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <button class="btn-primary">Publicar hechos finales</button>
+        </form>
+        <p class="text-xs text-habla-500 mt-3">Simula la ingesta de Oráculos, dispara Scoring y la tabla de posiciones.</p>
+      `);
+    }
+
+    function finalizeMatch(event, matchId){
+      event.preventDefault();
+      const form = document.getElementById('finalizeForm');
+      const home = parseInt(form.homeScore.value || 0, 10);
+      const away = parseInt(form.awayScore.value || 0, 10);
+      const red = form.redCard.value;
+      const facts = {
+        home,
+        away,
+        p1x2: home === away ? "Draw" : home > away ? "Home" : "Away",
+        btts: home > 0 && away > 0 ? "Yes" : "No",
+        over25: home + away > 2 ? "Yes" : "No",
+        red
+      };
+      applyMatchFacts(matchId, facts);
+      $('#modalRoot').innerHTML = "";
+      toast("Partido finalizado", "success");
+    }
+
+    function applyMatchFacts(matchId, facts){
+      const match = state.matches.find(x=>x.id===matchId);
+      if (!match) return;
+      match.status = "finished";
+      match.score = `${facts.home}-${facts.away} FT`;
+      state.matchFacts[matchId] = facts;
+      logEvent("Match.StateChanged", { matchId, status: "finished" });
+      logEvent("MatchFacts.Finalized", { matchId, score: match.score, red: facts.red });
+      runScoring(matchId);
+      router();
+    }
+
+    function runScoring(matchId){
+      const facts = state.matchFacts[matchId];
+      if (!facts) { toast("Carga primero los datos finales", "warn"); return; }
+      const tickets = state.tickets.filter(t => t.matchId === matchId);
+      tickets.forEach(ticket => {
+        let points = 0;
+        if (ticket.combo.p1x2 === facts.p1x2) points += 3;
+        if (ticket.combo.btts === facts.btts) points += 2;
+        if (ticket.combo.over25 === facts.over25) points += 2;
+        if (ticket.combo.red === facts.red) points += 6;
+        if (ticket.combo.exact && ticket.combo.exact.h === facts.home && ticket.combo.exact.a === facts.away) points += 8;
+        ticket.points = points;
+      });
+      logEvent("Scoring.Completed", { matchId, tickets: tickets.length });
+      finalizeLeaderboard(matchId);
+    }
+
+    function finalizeLeaderboard(matchId){
+      const tickets = state.tickets.filter(t => t.matchId === matchId);
+      const sorted = tickets.slice().sort((a,b) => {
+        const pointsDiff = (b.points || 0) - (a.points || 0);
+        if (pointsDiff !== 0) return pointsDiff;
+        return new Date(a.ts).getTime() - new Date(b.ts).getTime();
+      });
+      const leaderboard = sorted.map((ticket, idx) => {
+        ticket.position = idx + 1;
+        return {
+          ticketId: ticket.id,
+          user: ticket.userName || ticket.userId,
+          points: ticket.points || 0,
+          award: ticket.award || 0
+        };
+      });
+      state.leaderboards[matchId] = leaderboard;
+      logEvent("Leaderboard.Finalized", { matchId, entries: leaderboard.length });
+    }
+
+    function settlePayouts(matchId){
+      if (state.settlements[matchId]) { toast("Los premios ya fueron liquidados", "warn"); return; }
+      const match = state.matches.find(x=>x.id===matchId);
+      const leaderboard = state.leaderboards[matchId] || [];
+      if (!match || !leaderboard.length) { toast("Falta la tabla de posiciones", "warn"); return; }
+      const distribution = [0.6, 0.3, 0.1];
+      const winners = leaderboard.slice(0, 3).map((entry, idx) => ({
+        ...entry,
+        award: Math.round(match.prizePool * (distribution[idx] || 0))
+      }));
+      winners.forEach(w => {
+        const ticket = state.tickets.find(t => t.id === w.ticketId);
+        if (ticket) {
+          ticket.award = w.award;
+        }
+        const lbEntry = leaderboard.find(e => e.ticketId === w.ticketId);
+        if (lbEntry) lbEntry.award = w.award;
+        if (ticket && state.user && ticket.userId === state.user.id) {
+          creditWallet(w.award, `payout:${matchId}:${ticket.id}`);
+        }
+      });
+      state.leaderboards[matchId] = leaderboard;
+      state.settlements[matchId] = true;
+      logEvent("Payouts.Posted", { matchId, winners });
+      toast("Premios liquidados", "success");
+      $('#modalRoot').innerHTML = "";
+      router();
+    }
+
+    // ---------- Store ----------
+    function storeView(){
+      return `
+        <div class="flex items-center justify-between mb-4">
+          <h1 class="text-xl font-bold">Tienda de premios</h1>
+          <div class="text-sm text-habla-600">Canjea con Lukas</div>
+        </div>
+        <details class="card p-4 mb-4">
+          <summary class="font-semibold cursor-pointer">Operaciones de premios</summary>
+          <p class="text-xs text-habla-500 mt-2">Gestiona redenciones y sigue la trazabilidad sin salir de la tienda.</p>
+          <div class="flex flex-wrap gap-2 mt-3">
+            <button class="btn" onclick="openFulfillmentQueue()">Revisar cola</button>
+            <button class="btn" onclick="openRiskCenter()">Alertas de riesgo</button>
+            <button class="btn" onclick="openAuditLog()">Ver bitácora</button>
+          </div>
+        </details>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          ${state.store.map(item => storeCard(item)).join('')}
+        </div>
+        <div class="card p-4 mt-6">
+          <div class="flex items-center justify-between">
+            <div class="font-semibold">Cola de cumplimiento</div>
+            <div class="text-xs text-habla-500">Despacha premios físicos y digitales</div>
+          </div>
+          <table class="w-full text-sm mt-3">
+            <thead><tr class="text-left text-habla-600"><th class="py-2">Orden</th><th>Premio</th><th>Tipo</th><th>Estado</th><th></th></tr></thead>
+            <tbody>
+              ${state.orders.length ? state.orders.map(order => `
+                <tr class="border-t">
+                  <td class="py-2">#${order.id.slice(0,6)}</td>
+                  <td>${order.name}</td>
+                  <td class="capitalize">${storeTypeLabel(order.type)}</td>
+                  <td>${orderStatusLabel(order.status)}</td>
+                  <td class="text-right">
+                    ${order.status === 'requested' ? `<button class="btn" onclick="fulfillOrder('${order.id}')">Marcar como entregado</button>` : `<span class="text-xs text-habla-500">${order.status === 'completed' ? 'Entregado' : '—'}</span>`}
+                  </td>
+                </tr>
+              `).join('') : `<tr><td class="py-3 text-habla-600" colspan="5">Sin canjes aún.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+    function storeCard(item){
+      const allow = state.isAuth && state.wallet.lukas >= item.price && item.stock>0;
+      return `
+        <div class="card p-4 flex flex-col">
+          <div class="h-32 bg-habla-100 rounded-xl flex items-center justify-center text-habla-400">Imagen</div>
+          <div class="mt-3 font-semibold">${item.name}</div>
+          <div class="text-sm text-habla-600">${fmt(item.price)} Lukas · Existencias: ${item.stock}</div>
+          <div class="mt-auto pt-3">
+            <button class="btn-primary w-full" ${allow?'':'disabled'} onclick="redeem('${item.id}')">
+              ${allow? 'Canjear' : !state.isAuth ? 'Inicia sesión para canjear' : item.stock<=0 ? 'Sin stock' : 'Lukas insuficientes'}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    function redeem(itemId){
+      const item = state.store.find(s=>s.id===itemId);
+      if (!requireAuth("canjear un premio")) return;
+      if (!item) return;
+      if (item.stock<=0) { toast("Sin stock", "warn"); return; }
+      if (!debitWallet(item.price, `reward_redemption:${itemId}`)) { toast("Lukas insuficientes", "warn"); return; }
+      item.stock -= 1;
+      const order = { id: uid(), itemId, name:item.name, price:item.price, ts: nowIso(), type:item.type, status: item.type==='digital'?'completed':'requested' };
+      state.orders.unshift(order);
+      logEvent("Reward.Redeemed", { orderId: order.id, itemId });
+      if (order.type === 'physical' && order.price >= 30000) {
+        recordRisk({ service: "Tienda", reason: "Canje de alto valor", orderId: order.id, itemId, amount: order.price });
+      }
+      toast("Canje exitoso ✓", "success");
+      router();
+    }
+
+    function fulfillOrder(orderId){
+      const order = state.orders.find(o => o.id === orderId);
+      if (!order) { toast("Orden no encontrada", "warn"); return; }
+      order.status = "completed";
+      logEvent("Fulfillment.Completed", { orderId });
+      toast("Orden entregada", "success");
+      router();
+    }
+
+    function openFulfillmentQueue(){
+      openModal(`
+        <div class="flex items-start justify-between">
+          <h2 class="text-lg font-bold">Cola de cumplimiento</h2>
+          <button class="btn" onclick="this.closest('.fixed').remove()">✕</button>
+        </div>
+        <div class="mt-3">
+          <table class="w-full text-sm">
+            <thead><tr class="text-left text-habla-600"><th class="py-2">Orden</th><th>Premio</th><th>Tipo</th><th>Estado</th><th></th></tr></thead>
+            <tbody>
+              ${state.orders.length ? state.orders.map(order => `
+                <tr class="border-t">
+                  <td class="py-2">#${order.id.slice(0,6)}</td>
+                  <td>${order.name}</td>
+                  <td class="capitalize">${storeTypeLabel(order.type)}</td>
+                  <td>${orderStatusLabel(order.status)}</td>
+                  <td class="text-right">
+                    ${order.status === 'requested' ? `<button class="btn" onclick=\"fulfillOrder('${order.id}')\">Marcar como entregado</button>` : `<span class="text-xs text-habla-500">Completado</span>`}
+                  </td>
+                </tr>
+              `).join('') : `<tr><td class="py-3 text-habla-600" colspan="5">No hay canjes pendientes.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      `);
+    }
+
+    function openSettlementHelper(){
+      const targets = state.matches.filter(m => m.status === "finished");
+      openModal(`
+        <div class="flex items-start justify-between">
+          <h2 class="text-lg font-bold">Liquidación de premios</h2>
+          <button class="btn" onclick="this.closest('.fixed').remove()">✕</button>
+        </div>
+        <div class="mt-3 space-y-2 text-sm">
+          ${targets.length ? targets.map(m => `
+            <div class="card p-3 flex items-center justify-between">
+              <div>
+                <div class="font-semibold">${m.home} vs ${m.away}</div>
+                <div class="text-xs text-habla-500">Pozo: ${fmt(m.prizePool)} Lukas</div>
+              </div>
+              <button class="btn" onclick="settlePayouts('${m.id}')">Liquidar</button>
+            </div>
+          `).join('') : `<div class="text-habla-600">No hay partidos finalizados pendientes de premios.</div>`}
+        </div>
+      `);
+    }
+
+    function openRiskCenter(){
+      openModal(`
+        <div class="flex items-start justify-between">
+          <h2 class="text-lg font-bold">Alertas de riesgo</h2>
+          <button class="btn" onclick="this.closest('.fixed').remove()">✕</button>
+        </div>
+        <div class="mt-3 max-h-[60vh] overflow-auto">
+          <table class="w-full text-sm">
+            <thead><tr class="text-left text-habla-600"><th class="py-2">Fecha</th><th>Servicio</th><th>Detalle</th></tr></thead>
+            <tbody>
+              ${state.riskFlags.length ? state.riskFlags.map(flag => `
+                <tr class="border-t">
+                  <td class="py-2">${new Date(flag.ts).toLocaleString()}</td>
+                  <td>${flag.service}</td>
+                  <td class="text-habla-600">${flag.reason || ''} ${flag.amount ? `(${fmt(flag.amount)} Lukas)` : ''}</td>
+                </tr>
+              `).join('') : `<tr><td class="py-3 text-habla-600" colspan="3">Sin alertas de riesgo.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      `);
+    }
+
+    function openAuditLog(){
+      openModal(`
+        <div class="flex items-start justify-between">
+          <h2 class="text-lg font-bold">Bitácora de eventos</h2>
+          <button class="btn" onclick="this.closest('.fixed').remove()">✕</button>
+        </div>
+        <div class="mt-3 max-h-[60vh] overflow-auto">
+          <table class="w-full text-sm">
+            <thead><tr class="text-left text-habla-600"><th class="py-2">Fecha</th><th>Evento</th><th>Detalle</th></tr></thead>
+            <tbody>
+              ${state.events.length ? state.events.map(evt => `
+                <tr class="border-t">
+                  <td class="py-2">${new Date(evt.ts).toLocaleString()}</td>
+                  <td>${evt.type}</td>
+                  <td class="text-habla-600">${JSON.stringify(evt.detail)}</td>
+                </tr>
+              `).join('') : `<tr><td class="py-3 text-habla-600" colspan="3">Sin eventos todavía.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      `);
+    }
+
+    // ---------- Wallet / History ----------
+    function walletView(){
+      if (!state.isAuth) {
+        return `
+          <div class="card p-5">
+            <div class="flex items-center justify-between">
+              <div>
+                <h1 class="text-xl font-bold">Billetera y Pagos</h1>
+                <p class="text-sm text-habla-600">Inicia sesión para ver tus saldos, registrar recargas y seguir la trazabilidad de tus Lukas.</p>
+              </div>
+              <button class="btn-primary" onclick="openLoginModal('administrar tu billetera')">Ingresar</button>
+            </div>
+          </div>
+        `;
+      }
+
+      const lukasRows = state.wallet.movements.map(m => `
+        <tr class="border-t">
+          <td class="py-2">${new Date(m.ts).toLocaleString()}</td>
+          <td class="text-habla-600">${m.note}</td>
+          <td class="${m.type==='credit'?'text-green-700':'text-red-700'} font-semibold text-right">
+            ${m.type==='credit' ? '+' : '-'}${fmt(m.amount)}
+          </td>
+        </tr>
+      `).join('');
+
+      const topUpRows = state.wallet.topUps.map(t => `
+        <tr class="border-t">
+          <td class="py-2">${new Date(t.ts).toLocaleString()}</td>
+          <td class="text-habla-600">${methodLabel(t.method)} ${t.reference ? `· ${t.reference}` : ''}</td>
+          <td class="text-right capitalize">${t.status}</td>
+          <td class="text-right font-semibold">${fmt(t.amount)} Lukas</td>
+        </tr>
+      `).join('');
+
+      const withdrawalRows = state.wallet.withdrawals.map(w => `
+        <tr class="border-t">
+          <td class="py-2">${new Date(w.ts).toLocaleString()}</td>
+          <td class="text-habla-600">${w.destination}</td>
+          <td class="text-right">${fmt(w.amount)} Lukas</td>
+          <td class="text-right capitalize">${w.status.replace('_',' ')}</td>
+        </tr>
+      `).join('');
+
+      const verification = state.user?.ageVerified && state.user?.emailVerified ? 'Verificado' : 'Datos pendientes';
+
+      return `
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <h1 class="text-2xl font-black">Billetera y Pagos</h1>
+            <p class="text-sm text-habla-600">Recarga rápido con Yape/Plin o tarjeta y administra tus Lukas (moneda in-app) con claridad.</p>
+          </div>
+          <div class="hidden sm:flex gap-2">
+            <button class="btn" onclick="openTopUp()">Recargar Lukas</button>
+            <a class="btn" href="#/store">Canjear en tienda</a>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="card p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm text-habla-600">Saldo disponible en Lukas</div>
+                <div class="text-3xl font-black">${fmt(state.wallet.lukas)} Lukas</div>
+              </div>
+              <span class="pill">Activas</span>
+            </div>
+            <p class="text-sm text-habla-600">Solo las Lukas sirven para comprar tickets y canjear premios. Las Lukas compradas no son reembolsables.</p>
+            <div>
+              <a class="btn w-full" href="#/store">Ir a tienda</a>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 text-xs text-habla-600 px-1">
+            <span class="pill">Identidad y retiros</span>
+            <span class="font-semibold">${verification}</span>
+            <span class="text-habla-500">Retiros requieren verificación completa (documento y método de pago).</span>
+          </div>
+        </div>
+
+        <div id="topUpInline" class="card p-5 mt-6 space-y-4">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <div class="font-semibold">Recarga de Lukas en la misma página</div>
+              <p class="text-sm text-habla-600">Elige método, monto y datos aquí mismo; solo verás mensajes de confirmación cuando sea necesario.</p>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <button class="btn" onclick="setTopUpAmount(500)">+500</button>
+              <button class="btn" onclick="setTopUpAmount(1000)">+1,000</button>
+              <button class="btn" onclick="setTopUpAmount(2500)">+2,500</button>
+              <button class="btn" onclick="document.querySelector('#topUpInline .topup-amount-input')?.focus()">Personalizar</button>
+            </div>
+          </div>
+
+          <div class="card p-4 space-y-3">
+            <div class="font-semibold">Selecciona tu método</div>
+            <div class="grid sm:grid-cols-3 gap-2">
+              <button class="btn topup-method w-full justify-start" data-method="yape" onclick="selectTopUpMethod('yape','topUpInline')">
+                <div class="text-left">
+                  <div class="font-semibold">Yape / Plin</div>
+                  <div class="text-xs text-habla-600">QR o alias, acreditación directa.</div>
+                </div>
+              </button>
+              <button class="btn topup-method w-full justify-start" data-method="card" onclick="selectTopUpMethod('card','topUpInline')">
+                <div class="text-left">
+                  <div class="font-semibold">Tarjeta</div>
+                  <div class="text-xs text-habla-600">Ingresa los datos y confirma en segundos.</div>
+                </div>
+              </button>
+              <button class="btn topup-method w-full justify-start" data-method="bank" onclick="selectTopUpMethod('bank','topUpInline')">
+                <div class="text-left">
+                  <div class="font-semibold">Transferencia rápida</div>
+                  <div class="text-xs text-habla-600">Desde tu banca o billetera digital.</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-3">
+            <div class="md:col-span-2 card p-4 space-y-3">
+              <div class="font-semibold">Monto de recarga</div>
+              <div class="flex flex-wrap gap-2">
+                ${[500,1000,2500,5000].map(v => `
+                  <button class="btn" onclick="setTopUpAmount(${v}, 'topUpInline')">${fmt(v)} Lukas</button>
+                `).join('')}
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-habla-600 mb-1">Monto personalizado</label>
+                <input class="input topup-amount-input" type="number" min="100" step="50" placeholder="Ingresa el monto" oninput="updateTopUpSummary('topUpInline')" />
+              </div>
+            </div>
+            <div class="card p-4 space-y-2">
+              <div class="font-semibold">Resumen de recarga</div>
+              <div data-summary class="space-y-2 text-sm text-habla-700"></div>
+              <div class="text-xs text-habla-500">Se acreditará directo a tus Lukas sin abrir nuevas ventanas.</div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-3">
+            <div class="card p-4 space-y-3">
+              <div class="font-semibold">Datos del método</div>
+              <div data-fields="yape" class="space-y-2">
+                <label class="block text-xs text-habla-600">Número o alias para QR</label>
+                <input class="input" name="yapeAlias" type="text" placeholder="999 999 999" oninput="updateTopUpSummary('topUpInline')" />
+              </div>
+              <div data-fields="card" class="space-y-2 hidden">
+                <label class="block text-xs text-habla-600">Número de tarjeta</label>
+                <input class="input" name="cardNumber" type="text" placeholder="4111 1111 1111 1111" oninput="updateTopUpSummary('topUpInline')" />
+                <div class="grid grid-cols-2 gap-2">
+                  <input class="input" name="cardExp" type="text" placeholder="MM/AA" oninput="updateTopUpSummary('topUpInline')" />
+                  <input class="input" name="cvv" type="text" placeholder="CVV o referencia" oninput="updateTopUpSummary('topUpInline')" />
+                </div>
+              </div>
+              <div data-fields="bank" class="space-y-2 hidden">
+                <label class="block text-xs text-habla-600">Banco o billetera de origen</label>
+                <input class="input" name="bankName" type="text" placeholder="Interbank, BCP, etc." oninput="updateTopUpSummary('topUpInline')" />
+                <label class="block text-xs text-habla-600">Referencia de transferencia</label>
+                <input class="input" name="bankRef" type="text" placeholder="Código o referencia" oninput="updateTopUpSummary('topUpInline')" />
+              </div>
+            </div>
+            <div class="card p-4 space-y-3">
+              <div class="font-semibold">Datos de contacto y confirmación</div>
+              <div class="space-y-2">
+                <label class="block text-xs text-habla-600">Nombre y apellidos</label>
+                <input class="input" name="fullName" type="text" placeholder="Como figura en tu documento" oninput="updateTopUpSummary('topUpInline')" />
+              </div>
+              <div class="space-y-2">
+                <label class="block text-xs text-habla-600">Correo para comprobante</label>
+                <input class="input" name="contactEmail" type="email" placeholder="tu@email.com" oninput="updateTopUpSummary('topUpInline')" />
+              </div>
+              <button class="btn-primary w-full" onclick="submitTopUpFromInline()">Acreditar Lukas ahora</button>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <div class="grid md:grid-cols-5 gap-4 mt-6">
+          <div class="md:col-span-3 card p-5">
+            <div class="flex items-center justify-between mb-2">
+              <div class="font-semibold">Movimientos de Lukas</div>
+              <span class="text-xs text-habla-500">Historial de compras, juegos y canjes</span>
+            </div>
+            <table class="w-full text-sm">
+              <thead><tr class="text-left text-habla-600"><th class="py-2">Fecha</th><th>Nota</th><th class="text-right">Monto</th></tr></thead>
+              <tbody>${lukasRows || `<tr><td class="py-3 text-habla-600" colspan="3">Aún no hay movimientos.</td></tr>`}</tbody>
+            </table>
+          </div>
+
+          <div class="md:col-span-2 card p-5">
+            <div class="flex items-center justify-between mb-2">
+              <div class="font-semibold">Recargas recientes</div>
+              <span class="text-xs text-habla-500">Pagos rápidos acreditados como Lukas</span>
+            </div>
+            <table class="w-full text-sm">
+              <thead><tr class="text-left text-habla-600"><th class="py-2">Fecha</th><th>Método</th><th class="text-right">Estado</th><th class="text-right">Lukas</th></tr></thead>
+              <tbody>${topUpRows || `<tr><td class="py-3 text-habla-600" colspan="4">Sin recargas registradas.</td></tr>`}</tbody>
+            </table>
+            <p class="text-xs text-habla-500 mt-2">Todo se procesa en la misma pantalla; solo verás mensajes de confirmación cuando sea necesario.</p>
+          </div>
+        </div>
+
+        <div class="card p-5 mt-6">
+          <div class="flex items-center justify-between mb-2">
+            <div class="font-semibold">Retiros de premios</div>
+            <span class="text-xs text-habla-500">Requiere verificación completa</span>
+          </div>
+          <p class="text-sm text-habla-600 mb-3">Solo se procesan retiros provenientes de premios liquidados en Lukas. Las recargas sirven para jugar y canjear; si falta verificación, tu retiro pasará a revisión.</p>
+          <table class="w-full text-sm">
+            <thead><tr class="text-left text-habla-600"><th class="py-2">Fecha</th><th>Destino</th><th class="text-right">Monto</th><th class="text-right">Estado</th></tr></thead>
+            <tbody>${withdrawalRows || `<tr><td class="py-3 text-habla-600" colspan="4">Aún no has solicitado retiros.</td></tr>`}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function myTicketsView(){
+      const items = state.tickets.filter(t => state.user && t.userId===state.user.id && Date.now()-new Date(t.ts).getTime() < 30*24*60*60*1000);
+      if (!state.isAuth) return `<div class="card p-5">Inicia sesión para ver tus últimas combinadas de 30 días.</div>`;
+      return `
+        <div class="flex items-center justify-between mb-3">
+          <h1 class="text-xl font-bold">Mis combinadas (últimos 30 días)</h1>
+          <a class="btn" href="#/results">Ir a resultados</a>
+        </div>
+        <div class="card p-4">
+          ${items.length ? `
+          <ul class="divide-y divide-habla-200">
+            ${items.map(t => {
+              const m = state.matches.find(x=>x.id===t.matchId);
+              return `
+              <li class="py-3 text-sm">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium">${m ? `${m.home} vs ${m.away}` : t.matchId}</div>
+                    <div class="text-habla-600">1X2: ${p1x2Label(t.combo.p1x2)} · BTTS: ${yesNoLabel(t.combo.btts)} · O2.5: ${yesNoLabel(t.combo.over25)} · Roja: ${yesNoLabel(t.combo.red)} · Exacto: ${t.combo.exact.h}-${t.combo.exact.a}</div>
+                    <div class="text-xs text-habla-500 mt-1">Enviada ${new Date(t.ts).toLocaleString()}</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="pill">Costo ${t.fee} Lukas</div>
+                    ${typeof t.points==='number' ? `<div class="mt-1 text-sm">Pts: <strong>${t.points}</strong> · Pos.: ${t.position ?? '-'}</div>` : ``}
+                  </div>
+                </div>
+              </li>`;
+            }).join('')}
+          </ul>` : `<div class="text-sm text-habla-600">Aún no hay combinadas.</div>`}
+        </div>
+      `;
+    }
+
+    function resultsView(){
+      const finished = state.matches.filter(m=>m.status==="finished");
+      return `
+        <div class="flex items-center justify-between mb-3">
+          <h1 class="text-xl font-bold">Resultados</h1>
+          <a class="btn" href="#/matches">Volver a Partidos</a>
+        </div>
+        <div class="space-y-4">
+          ${finished.length? finished.map(m => `
+            <div class="card p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="font-semibold">${m.home} vs ${m.away}</div>
+                  <div class="text-sm text-habla-600">Pozo: ${fmt(m.prizePool)} Lukas</div>
+                </div>
+                <button class="btn" onclick="openLeaderboard('${m.id}')">Ver tabla de posiciones</button>
+              </div>
+            </div>
+          `).join('') : `<div class="card p-4 text-sm text-habla-600">Aún no hay partidos finalizados.</div>`}
+        </div>
+        <div class="card p-4 mt-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-semibold">Herramientas post-partido</div>
+              <p class="text-xs text-habla-500">Liquida premios y revisa controles operativos cuando cierre un partido.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button class="btn" onclick="openSettlementHelper()">Liquidar premios</button>
+              <button class="btn" onclick="openRiskCenter()">Alertas de riesgo</button>
+              <button class="btn" onclick="openAuditLog()">Bitácora</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function profileView(){
+      if (!state.isAuth || !state.user) {
+        return `<div class="card p-5">Inicia sesión para ver y actualizar tu perfil.</div>`;
+      }
+      const u = state.user;
+      const age = calculateAge(u.birthDate);
+      const verificationBadge = (ok, okLabel='Verificado', pendingLabel='Pendiente') => {
+        const baseClass = ok ? 'bg-green-100 text-green-700 border-green-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200';
+        const text = ok ? okLabel : pendingLabel;
+        return `<span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${baseClass}">${text}</span>`;
+      };
+      const acceptancesList = [
+        { key: 'terms', label: 'Términos y Condiciones' },
+        { key: 'privacy', label: 'Política de Privacidad' },
+        { key: 'responsible', label: 'Política de Juego Responsable' },
+        { key: 'adult', label: 'Declaración de ser mayor de 18 años' }
+      ];
+
+      return `
+        <div class="space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h1 class="text-xl font-bold">Mi perfil</h1>
+              <p class="text-sm text-habla-600">Consulta tu información y el estado de tus verificaciones.</p>
+            </div>
+            <button class="btn" onclick="openPasswordChangeDialog()">Cambiar contraseña</button>
+          </div>
+
+          <div class="grid gap-4 lg:grid-cols-[2fr,1fr]">
+            <div class="card p-5 space-y-4">
+              <h2 class="text-lg font-semibold">Datos personales</h2>
+              <div class="grid md:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div class="text-xs uppercase tracking-wide text-habla-500">Correo electrónico</div>
+                  <div class="font-medium">${u.email}</div>
+                </div>
+                <div>
+                  <div class="text-xs uppercase tracking-wide text-habla-500">Nickname / Nombre visible</div>
+                  <div class="font-medium">${u.nickname}</div>
+                </div>
+                <div>
+                  <div class="text-xs uppercase tracking-wide text-habla-500">Nombres</div>
+                  <div>${u.firstName}</div>
+                </div>
+                <div>
+                  <div class="text-xs uppercase tracking-wide text-habla-500">Apellidos</div>
+                  <div>${u.lastName}</div>
+                </div>
+                <div>
+                  <div class="text-xs uppercase tracking-wide text-habla-500">Fecha de nacimiento</div>
+                  <div>${formatDate(u.birthDate)}</div>
+                </div>
+                <div>
+                  <div class="text-xs uppercase tracking-wide text-habla-500">Edad</div>
+                  <div>${typeof age === 'number' ? `${age} años` : 'Sin calcular'}</div>
+                </div>
+                <div>
+                  <div class="text-xs uppercase tracking-wide text-habla-500">País de residencia</div>
+                  <div>${u.country}</div>
+                </div>
+                <div>
+                  <div class="text-xs uppercase tracking-wide text-habla-500">ID de jugador</div>
+                  <div>${u.id}</div>
+                </div>
+              </div>
+            </div>
+            <div class="card p-5 space-y-3">
+              <h2 class="text-lg font-semibold">Verificaciones</h2>
+              <div class="flex items-center justify-between text-sm">
+                <span>Correo electrónico</span>
+                ${verificationBadge(!!u.emailVerified)}
+              </div>
+              <p class="text-xs text-habla-500 ${u.emailVerified ? '' : 'text-yellow-700'}">${u.emailVerified ? 'Tu correo ya fue verificado.' : 'Pendiente de verificación. Revisa tu bandeja para confirmar tu correo.'}</p>
+              <div class="flex items-center justify-between text-sm">
+                <span>Mayoría de edad</span>
+                ${verificationBadge(!!u.ageVerified, 'Verificada', 'Pendiente')}
+              </div>
+              <p class="text-xs text-habla-500 ${u.ageVerified ? '' : 'text-yellow-700'}">${u.ageVerified ? 'Se confirmó que eres mayor de 18 años.' : 'Revisaremos tus datos para confirmar tu mayoría de edad.'}</p>
+            </div>
+          </div>
+
+          <div class="card p-5 space-y-3">
+            <h2 class="text-lg font-semibold">Aceptaciones</h2>
+            <ul class="space-y-2 text-sm">
+              ${acceptancesList.map(item => {
+                const accepted = !!(u.acceptances && u.acceptances[item.key]);
+                return `
+                  <li class="flex items-start justify-between gap-3">
+                    <span>${item.label}</span>
+                    ${verificationBadge(accepted, 'Aceptado', 'Pendiente')}
+                  </li>
+                `;
+              }).join('')}
+            </ul>
+            <div class="text-xs text-habla-500">Fecha de registro: ${formatDate(u.createdAt || u.lastLoginAt)}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ---------- Static pages ----------
+    const staticViews = {
+      "how-to-play": `
+        <div class="prose max-w-none">
+          <h1>Cómo jugar</h1>
+          <ol>
+            <li>Compra <strong>Lukas</strong> (on-ramp) y carga tu billetera.</li>
+            <li>Elige un <strong>partido</strong> con estado <em>Abierto</em> y crea tu <strong>combinada</strong> con 5 predicciones.</li>
+            <li>Al <em>kickoff</em> se cierran entradas y se <strong>revelan</strong> todas las combinadas.</li>
+            <li>Al finalizar, se <strong>califican</strong> las combinadas, se publica la <strong>tabla de posiciones</strong> y se abonan los <strong>premios</strong> a tu billetera.</li>
+            <li>Canjea tus Lukas en la <a href="#/store">tienda</a>.</li>
+          </ol>
+        </div>
+      `,
+      "rules": `
+        <div class="prose max-w-none">
+          <h1>Reglas y puntajes</h1>
+          <ul>
+            <li>1X2 = 3 pts</li>
+            <li>Ambos anotan = 2 pts</li>
+            <li>Más de 2.5 goles = 2 pts</li>
+            <li>Tarjeta roja = 6 pts</li>
+            <li>Marcador exacto = 8 pts</li>
+          </ul>
+          <p>Desempates: mayor acierto en marcador exacto; luego timestamp más temprano; si persiste, prorrateo del premio.</p>
+        </div>
+      `,
+      "faq": `<div class="prose max-w-none"><h1>Preguntas frecuentes</h1><p>Contenido de preguntas frecuentes (contenido pendiente).</p></div>`,
+      "terms": `<div class="prose max-w-none"><h1>Términos del servicio</h1><p>Contenido pendiente.</p></div>`,
+      "privacy": `<div class="prose max-w-none"><h1>Política de privacidad</h1><p>Contenido pendiente.</p></div>`,
+      "responsible": `<div class="prose max-w-none"><h1>Juego responsable</h1><p>Juega responsablemente.</p></div>`,
+      "help": `<div class="prose max-w-none"><h1>Centro de ayuda</h1><p>Escríbenos a soporte@habla.example.</p></div>`,
+      "contact": `<div class="prose max-w-none"><h1>Contacto</h1><p>Formulario de contacto (contenido pendiente).</p></div>`,
+      "report": `<div class="prose max-w-none"><h1>Reportar un problema</h1><p>Describe el problema (contenido pendiente).</p></div>`,
+      "history": `<div class="prose max-w-none"><h1>Historial</h1><p>Usa "Mis combinadas" y "Billetera" para ver tu historial de 30 días.</p></div>`,
+      "transparency": `<div class="prose max-w-none"><h1>Transparencia</h1><p>Las combinadas se publican tras el kickoff. Consulta la sección de "Transparencia" dentro del detalle del partido.</p></div>`
+    };
+
+    // ---------- Router ----------
+    function router(){
+      const app = document.getElementById('app');
+      const [_, route, arg] = (location.hash || "#/matches").split("/");
+      let html = "";
+
+      switch(route){
+        case "matches": html = matchesView(); break;
+        case "match": html = matchDetailView(arg); break;
+        case "tickets": html = myTicketsView(); break;
+        case "results": html = resultsView(); break;
+        case "store": html = storeView(); break;
+        case "wallet": html = walletView(); break;
+        case "profile": html = profileView(); break;
+        default:
+          html = staticViews[route] || matchesView();
+      }
+
+      app.innerHTML = html;
+      app.classList.remove('fade-enter'); // reset animation
+      void app.offsetWidth;               // reflow
+      app.classList.add('fade-enter','fade-enter-active');
+
+      renderAuthArea();
+      if (route === "wallet") updateTopUpSummary('topUpInline');
+    }
+    window.addEventListener('hashchange', router);
+
+    // ---------- Quick actions ----------
+    function quickCreateTicket(){
+      // open modal preselect on nearest open match
+      const m = state.matches.find(x=>x.status==="open");
+      if (!m) { toast("No hay partidos abiertos en este momento", "warn"); return; }
+      createTicket(m.id);
+    }
+
+    // ---------- Init ----------
+    router();
+    renderAuthArea();
+
+    // Optional: small timer to update countdown label (demo)
+    setInterval(() => {
+      if (location.hash.startsWith("#/matches")) router();
+    }, 1000);
+
+  </script>
+</body>
+</html>
