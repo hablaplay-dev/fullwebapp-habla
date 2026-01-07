@@ -38,6 +38,11 @@
 - El acceso se centraliza en `lib/data/*` con TODOs para reemplazar por consultas Supabase.
 - Reemplaza el mock dentro de cada función (por ejemplo `getMatches`, `getWallet`) usando los helpers de `lib/supabase/server`.
 
+### Checklist
+
+- [x] Guest can browse pages
+- [x] Only playing requires login
+
 ## Features
 
 - Works across the entire [Next.js](https://nextjs.org) stack
