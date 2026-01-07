@@ -1,6 +1,5 @@
 import AuthCallout from "@/components/habla/auth-callout";
 import PageShell from "@/components/habla/page-shell";
-import { getSessionUser } from "@/lib/data/auth";
 import { getWallet } from "@/lib/data/wallet";
 import Link from "next/link";
 
@@ -12,7 +11,7 @@ const movementStyles = {
 
 export default async function WalletPage() {
   const wallet = await getWallet();
-  const hasSession = Boolean(await getSessionUser());
+  const hasSession = false;
 
   return (
     <PageShell>

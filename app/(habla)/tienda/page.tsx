@@ -1,11 +1,10 @@
 import AuthCallout from "@/components/habla/auth-callout";
 import PageShell from "@/components/habla/page-shell";
-import { getSessionUser } from "@/lib/data/auth";
 import { getStoreItems } from "@/lib/data/store";
 
 export default async function StorePage() {
   const items = await getStoreItems();
-  const hasSession = Boolean(await getSessionUser());
+  const hasSession = false;
 
   return (
     <PageShell>

@@ -1,12 +1,11 @@
 import AuthCallout from "@/components/habla/auth-callout";
 import PageShell from "@/components/habla/page-shell";
 import TicketCard from "@/components/habla/ticket-card";
-import { getSessionUser } from "@/lib/data/auth";
 import { getMyTickets } from "@/lib/data/tickets";
 
 export default async function MyTicketsPage() {
   const tickets = await getMyTickets();
-  const hasSession = Boolean(await getSessionUser());
+  const hasSession = false;
 
   return (
     <PageShell>

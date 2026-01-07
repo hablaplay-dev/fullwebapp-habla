@@ -1,6 +1,5 @@
 import CreateTicketForm from "@/components/habla/create-ticket-form";
 import PageShell from "@/components/habla/page-shell";
-import { getSessionUser } from "@/lib/data/auth";
 import { getMatchById } from "@/lib/data/matches";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -16,7 +15,7 @@ export default async function CreateTicketPage({
     notFound();
   }
 
-  const hasSession = Boolean(await getSessionUser());
+  const hasSession = false;
 
   return (
     <PageShell>
