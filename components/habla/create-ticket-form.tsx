@@ -223,13 +223,15 @@ export default function CreateTicketForm({ hasSession }: CreateTicketFormProps) 
         </div>
       ) : null}
 
-      <button
-        className={cn("btn-primary w-full", !hasSession && "opacity-50")}
-        type="submit"
-        disabled={!hasSession}
-      >
-        Guardar combinada
-      </button>
+      {hasSession ? (
+        <button className="btn-primary w-full" type="submit">
+          Guardar combinada
+        </button>
+      ) : (
+        <Link className="btn-primary w-full justify-center inline-flex" href="/login">
+          Inicia sesión para guardar
+        </Link>
+      )}
     </form>
   );
 }

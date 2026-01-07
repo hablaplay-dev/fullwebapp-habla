@@ -1,6 +1,7 @@
 import AuthCallout from "@/components/habla/auth-callout";
 import PageShell from "@/components/habla/page-shell";
 import { getStoreItems } from "@/lib/data/store";
+import Link from "next/link";
 
 export default async function StorePage() {
   const items = await getStoreItems();
@@ -31,13 +32,15 @@ export default async function StorePage() {
                     Stock: {item.stock}
                   </div>
                 </div>
-                <button
-                  className="btn-primary"
-                  type="button"
-                  disabled={!hasSession}
-                >
-                  Canjear
-                </button>
+                {hasSession ? (
+                  <button className="btn-primary" type="button">
+                    Canjear
+                  </button>
+                ) : (
+                  <Link className="btn-primary" href="/login">
+                    Inicia sesión
+                  </Link>
+                )}
               </div>
             </div>
           ))}
