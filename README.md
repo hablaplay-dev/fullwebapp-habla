@@ -17,6 +17,32 @@
 </p>
 <br/>
 
+## Habla! App Router map
+
+| Ruta | Vista |
+| --- | --- |
+| `/` | Redirige a `/matches` |
+| `/matches` | Home / Matches |
+| `/matches/[matchId]` | Detalle de partido (Transparencia + Leaderboard) |
+| `/matches/[matchId]/crear` | Crear combinada |
+| `/mis-combinadas` | Mis combinadas |
+| `/resultados` | Resultados |
+| `/wallet` | Wallet / Movimientos |
+| `/tienda` | Tienda de premios |
+| `/como-jugar` | Cómo jugar |
+| `/faq` | Preguntas frecuentes |
+
+### Mock → Supabase
+
+- Mocks viven en `lib/mock/*` (arreglos tipados).
+- El acceso se centraliza en `lib/data/*` con TODOs para reemplazar por consultas Supabase.
+- Reemplaza el mock dentro de cada función (por ejemplo `getMatches`, `getWallet`) usando los helpers de `lib/supabase/server`.
+
+### Checklist
+
+- [x] Guest can browse pages
+- [x] Only playing requires login
+
 ## Features
 
 - Works across the entire [Next.js](https://nextjs.org) stack
