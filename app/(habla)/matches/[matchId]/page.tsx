@@ -13,7 +13,7 @@ const statusLabels = {
 };
 
 type MatchDetailPageProps = {
-  params: { matchId: string };
+  params: Promise<{ matchId: string }>;
   searchParams?: { tab?: string };
 };
 
@@ -21,7 +21,8 @@ export default async function MatchDetailPage({
   params,
   searchParams,
 }: MatchDetailPageProps) {
-  const match = await getMatchById(params.matchId);
+  const { matchId } = await params;
+  const match = await getMatchById(matchId);
 
   if (!match) {
     notFound();
