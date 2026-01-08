@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/matches", label: "Matches" },
+  { href: "/matches", label: "Partidos" },
   { href: "/mis-combinadas", label: "Mis combinadas" },
   { href: "/resultados", label: "Resultados" },
-  { href: "/wallet", label: "Wallet" },
+  { href: "/wallet", label: "Billetera" },
 ];
 
 export default function BottomNav() {

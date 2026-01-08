@@ -45,11 +45,11 @@ export default function TopBar({ hasSession }: TopBarProps) {
               <span>0</span> Lukas
             </div>
           ) : null}
-          <Link className="btn" href={hasSession ? "/wallet" : "/login"}>
+          <Link className="btn" href={hasSession ? "/wallet" : "/auth/login"}>
             Recargar
           </Link>
           <div className="ml-2">
-            <Link className="btn" href={hasSession ? "/protected" : "/login"}>
+            <Link className="btn" href={hasSession ? "/perfil" : "/auth/login"}>
               {hasSession ? "Mi cuenta" : "Iniciar sesión / Registrarse"}
             </Link>
           </div>

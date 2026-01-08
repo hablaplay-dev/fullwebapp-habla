@@ -18,14 +18,14 @@ export default async function WalletPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Wallet</h1>
+            <h1 className="text-2xl font-bold">Billetera</h1>
             <p className="text-sm text-habla-600 mt-1">
               Gestiona tu saldo de Lukas y revisa movimientos recientes.
             </p>
           </div>
           <Link
             className={`btn ${hasSession ? "btn-primary" : ""}`}
-            href={hasSession ? "/wallet" : "/login"}
+            href={hasSession ? "/wallet" : "/auth/login"}
           >
             Recargar Lukas
           </Link>
