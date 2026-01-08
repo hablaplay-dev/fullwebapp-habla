@@ -14,7 +14,7 @@ const statusLabels = {
 
 type MatchDetailPageProps = {
   params: Promise<{ matchId: string }>;
-  searchParams?: { tab?: string };
+  searchParams?: Promise<{ tab?: string }>;
 };
 
 export default async function MatchDetailPage({
@@ -22,6 +22,7 @@ export default async function MatchDetailPage({
   searchParams,
 }: MatchDetailPageProps) {
   const { matchId } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const match = await getMatchById(matchId);
 
   if (!match) {
@@ -29,7 +30,7 @@ export default async function MatchDetailPage({
   }
 
   const tabParam =
-    searchParams?.tab === "leaderboard" ? "leaderboard" : "transparencia";
+    resolvedSearchParams?.tab === "leaderboard" ? "leaderboard" : "transparencia";
   const leaderboard = await getLeaderboardByMatchId(match.id);
 
   return (
