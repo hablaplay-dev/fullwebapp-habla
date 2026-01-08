@@ -217,8 +217,8 @@ export default function CreateTicketForm({ hasSession }: CreateTicketFormProps) 
           <p className="text-sm text-habla-600 mt-1">
             Inicia sesión para guardar tu combinada y competir por premios.
           </p>
-          <Link href="/login" className="btn-primary mt-3 inline-flex">
-            Ir a login
+          <Link href="/auth/login" className="btn-primary mt-3 inline-flex">
+            Ir a iniciar sesión
           </Link>
         </div>
       ) : null}
@@ -228,7 +228,10 @@ export default function CreateTicketForm({ hasSession }: CreateTicketFormProps) 
           Guardar combinada
         </button>
       ) : (
-        <Link className="btn-primary w-full justify-center inline-flex" href="/login">
+        <Link
+          className="btn-primary w-full justify-center inline-flex"
+          href="/auth/login"
+        >
           Inicia sesión para guardar
         </Link>
       )}

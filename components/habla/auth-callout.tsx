@@ -7,7 +7,7 @@ export default function AuthCallout() {
       <p className="text-sm text-habla-600 mt-1">
         Necesitas una cuenta para crear combinadas, recargar o canjear premios.
       </p>
-      <Link className="btn-primary mt-3 inline-flex" href="/login">
+      <Link className="btn-primary mt-3 inline-flex" href="/auth/login">
         Inicia sesión
       </Link>
     </div>

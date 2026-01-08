@@ -14,12 +14,13 @@ const tabs: { id: MatchStatus; label: string }[] = [
 ];
 
 type MatchesPageProps = {
-  searchParams?: { status?: string };
+  searchParams?: Promise<{ status?: string }>;
 };
 
 export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const matches = await getMatches();
-  const statusParam = searchParams?.status;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const statusParam = resolvedSearchParams?.status;
   const activeStatus = tabs.some((tab) => tab.id === statusParam)
     ? (statusParam as MatchStatus)
     : "open";

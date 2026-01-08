@@ -33,7 +33,7 @@ export default function Footer() {
           <div className="font-semibold mb-2">Cuenta</div>
           <ul className="space-y-1">
             <li>
-              <Link href="/protected" className="link">
+              <Link href="/perfil" className="link">
                 Mi perfil
               </Link>
             </li>

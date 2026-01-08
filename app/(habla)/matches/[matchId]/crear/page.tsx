@@ -4,12 +4,13 @@ import { getMatchById } from "@/lib/data/matches";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-export default async function CreateTicketPage({
-  params,
-}: {
-  params: { matchId: string };
-}) {
-  const match = await getMatchById(params.matchId);
+type Props = {
+  params: Promise<{ matchId: string }>;
+};
+
+export default async function CreateTicketPage({ params }: Props) {
+  const { matchId } = await params;
+  const match = await getMatchById(matchId);
 
   if (!match) {
     notFound();

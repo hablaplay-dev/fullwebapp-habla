@@ -37,7 +37,7 @@ export default async function StorePage() {
                     Canjear
                   </button>
                 ) : (
-                  <Link className="btn-primary" href="/login">
+                  <Link className="btn-primary" href="/auth/login">
                     Inicia sesión
                   </Link>
                 )}
